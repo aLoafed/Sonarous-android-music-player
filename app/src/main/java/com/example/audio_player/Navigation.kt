@@ -265,7 +265,6 @@ fun HorizontalTabRow(
                             containerColor = viewModel.backgroundColor,
                             expanded = dropDownMenu,
                             onDismissRequest = { dropDownMenu = false },
-                            modifier = Modifier.border(0.dp, viewModel.iconColor)
                         ) {
                             DropdownMenuItem(
                                 text = {

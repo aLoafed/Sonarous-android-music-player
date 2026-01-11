@@ -1,9 +1,7 @@
 package com.example.audio_player
 
 import android.content.Context
-import android.media.audiofx.PresetReverb
 import android.os.Handler
-import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -55,17 +53,6 @@ class PlayerService : MediaSessionService() {
         var eqList = DoubleArray(7)
         var volume = 0.0
         var usingSonicProcessor = false
-        lateinit var reverb: PresetReverb
-
-        fun setReverbId(player: ExoPlayer) {
-            reverb = PresetReverb(0, player.audioSessionId)
-            player.setAuxEffectInfo(AuxEffectInfo(reverb.id, 1f))
-        }
-
-        fun setReverbPreset(reverbPreset: Short) {
-            reverb.preset = reverbPreset
-            reverb.enabled = true
-        }
 
         override fun configure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
             if (usingSonicProcessor) {
@@ -92,7 +79,7 @@ class PlayerService : MediaSessionService() {
             if (usingSonicProcessor) {
                 sonicAudioProcessor.queueInput(inputBuffer)
             } else {
-                outputBuffer = inputBuffer // Default audio buffer processing
+                outputBuffer = inputBuffer
             }
         }
 
@@ -238,7 +225,6 @@ class PlayerService : MediaSessionService() {
             .build()
         mediaSession = MediaSession.Builder(this, player)
             .build()
-        SpectrumAnalyzer.setReverbId(player)
     }
 
     override fun onDestroy() {

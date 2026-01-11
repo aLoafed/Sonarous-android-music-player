@@ -122,7 +122,7 @@ fun AlbumSongsScreen(album: String, songInfo: List<SongInfo>, mediaController: M
                                         viewModel.queueingSongs = false
                                         viewModel.shuffleMode = false
                                         mediaController.clearMediaItems()
-//                                        viewModel.albumSongInfo = albumSongsList // Removed for centralization
+//                                        viewModel.shuffledAlbumSongInfo = albumSongsList // Removed for centralization
                                         for (j in 0 until albumSongsList.count()) {
                                             mediaController.addMediaItem(
                                                 MediaItem.fromUri(

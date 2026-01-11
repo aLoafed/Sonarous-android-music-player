@@ -7,11 +7,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
@@ -43,7 +47,16 @@ import kotlin.time.Duration.Companion.seconds
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @UnstableApi
 class MainActivity : ComponentActivity() {
-    val viewModel = PlayerViewModel()
+    val viewModel by viewModels<PlayerViewModel>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return PlayerViewModel(
+                    ) as T
+                }
+            }
+        }
+    )
     lateinit var controllerFuture: ListenableFuture<MediaController>
 
     @SuppressLint("InlinedApi")
@@ -53,7 +66,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         var songInfo: List<SongInfo>?
         var albumInfo: List<AlbumInfo>?
-        var mediaInfoPair: Pair<List<SongInfo>, List<AlbumInfo>>?
         //==================== Check & request permissions ====================//
         val requestPermissionLauncher = registerForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -63,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 when {
                     Manifest.permission.READ_MEDIA_AUDIO in requests.keys -> {
                         if (requests[Manifest.permission.READ_MEDIA_AUDIO] == true) {
-                            mediaInfoPair = getSongInfo(applicationContext)
+                            viewModel.mediaInfoPair = getSongInfo(applicationContext)
                         } else {
                             requestPermissions(
                                 arrayOf(Manifest.permission.READ_MEDIA_AUDIO),
@@ -74,7 +86,7 @@ class MainActivity : ComponentActivity() {
 
                     Manifest.permission.READ_EXTERNAL_STORAGE in requests.keys -> {
                         if (requests[Manifest.permission.READ_EXTERNAL_STORAGE] == true) {
-                            mediaInfoPair = getSongInfo(applicationContext)
+                            viewModel.mediaInfoPair = getSongInfo(applicationContext)
                         } else {
                             requestPermissions(
                                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
@@ -115,7 +127,7 @@ class MainActivity : ComponentActivity() {
             this,
             SessionToken(
                 this,
-                ComponentName(this, PlayerService::class.java) // ComponentName(this, mediaSessionService::class.java)
+                ComponentName(this, PlayerService::class.java)
             )
         ).buildAsync()
         controllerFuture.addListener(
@@ -125,24 +137,23 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val audioProcessor = PlayerService.SpectrumAnalyzer
             audioProcessor.visualiserIsOn = true
-            mediaInfoPair = requestInitPermissions(applicationContext, requestPermissionLauncher)
+            viewModel.mediaInfoPair = requestInitPermissions(applicationContext, requestPermissionLauncher)
 
             enableEdgeToEdge()
             setContent {
                 BasicLoadingScreen(viewModel)
             }
-
-            while (mediaController == null || mediaInfoPair == null) {
+            while (mediaController == null || viewModel.mediaInfoPair == null) { //
                 delay(50)
             }
             while (!viewModel.loadingFinished) {
                 delay(10)
             }
-            songInfo = mediaInfoPair!!.first
-            albumInfo = mediaInfoPair!!.second
+
+            songInfo = viewModel.mediaInfoPair!!.first
+            albumInfo = viewModel.mediaInfoPair!!.second
             val listener = PlayerListener(applicationContext, viewModel, mediaController)
             mediaController.addListener(listener)
-
             setContent {
                 Audio_playerTheme {
                     NavHost(
@@ -164,13 +175,6 @@ class MainActivity : ComponentActivity() {
                             while (true) {
                                 mediaController.let {
                                     if (it.duration != C.TIME_UNSET) {
-//                                        if (audioProcessor.usingSonicProcessor) {
-//                                            viewModel.updateSongDuration(
-//                                                (mediaController.duration / audioProcessor.speed).toLong()
-//                                            )
-//                                        } else {
-//                                            viewModel.updateSongDuration(mediaController.duration)
-//                                        }
                                         viewModel.updateSongDuration(mediaController.duration)
                                     }
                                     delay(1.seconds / 30)

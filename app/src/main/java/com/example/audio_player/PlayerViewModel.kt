@@ -1,7 +1,6 @@
 package com.example.audio_player
 
 import android.content.Context
-import android.media.audiofx.PresetReverb
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,35 +23,17 @@ class PlayerViewModel : ViewModel() {
     var currentSongPosition by mutableFloatStateOf((0f)) // Current position in song
     var songIndex by mutableIntStateOf(0)
     var selectedAlbum by mutableStateOf("")
-    var albumSongInfo = mutableListOf<SongInfo>()
+    var shuffledAlbumSongInfo = mutableListOf<SongInfo>()
     var queuedSongs = mutableStateListOf<SongInfo>()
     var shuffleSongInfo = listOf<SongInfo>()
     var lastPlayedUnshuffledSong = 0
+    var mediaInfoPair: Pair<List<SongInfo>, List<AlbumInfo>>? = null
     //========================= Playing modes =========================
     var isPlaying by mutableStateOf(false)
     var playingFromSongsScreen by mutableStateOf(true)
     var shuffleMode by mutableStateOf(false)
     var repeatMode by mutableStateOf("normal") // Change to ENUM?
     var queueingSongs by mutableStateOf(false)
-    //============================ Audio effect ===========================
-    var reverbPresetType by mutableIntStateOf(0)
-    var reverbPresetValue by mutableIntStateOf(0)
-    var menuWidth by mutableStateOf(180.dp)
-    var steps by mutableIntStateOf(
-        when (reverbPresetType) {
-            PresetReverb.PRESET_SMALLROOM.toInt() -> 3
-            PresetReverb.PRESET_MEDIUMHALL.toInt() -> 2
-            else -> 3
-        }
-    )
-    var reverbValueRange by mutableStateOf(
-        when (reverbPresetType) {
-            PresetReverb.PRESET_SMALLROOM.toInt() -> 0f..2f
-            PresetReverb.PRESET_MEDIUMHALL.toInt() -> 0f..1f
-            else -> 0f..2f
-        }
-    )
-    var showReverbValueSlider by mutableStateOf(false)
     //============================ Colours ===========================
     var backgroundColor = LcdGrey
     var textColor = Color.White
@@ -92,6 +73,7 @@ class PlayerViewModel : ViewModel() {
     var loadingFinished by mutableStateOf(false)
     var showEqualiser by mutableStateOf(true)
     var audioEffectMenuExpanded by mutableStateOf(false)
+    val menuWidth by mutableStateOf(120.dp)
     //========================= More options screen =========================//
     var showMoreOptions by mutableStateOf(false)
     lateinit var moreOptionsSelectedSong: SongInfo

@@ -1,7 +1,6 @@
 package com.example.audio_player
 
 import android.content.res.Configuration
-import android.media.audiofx.PresetReverb
 import androidx.annotation.OptIn
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
@@ -30,7 +29,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -140,6 +138,7 @@ fun HorizontalOrientation(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.height(5.dp))
             HorizontalPlayingMediaInfo(viewModel)
             PlaybackControls(mediaController, viewModel, 46.dp)
             SeekBarAndOtherControls(viewModel, mediaController, songInfo, audioProcessor)
@@ -478,7 +477,7 @@ fun ShuffleControls(mediaController: MediaController?, viewModel: PlayerViewMode
         onClick = {
             if (!viewModel.shuffleMode) { // Switching to shuffle
                 if (!viewModel.playingFromSongsScreen) { // Playing from albums
-                    val tmpShuffledAlbumSongInfo = viewModel.albumSongInfo.shuffled()
+                    val tmpShuffledAlbumSongInfo = viewModel.shuffledAlbumSongInfo.shuffled()
                     tmpSongInfo.clear()
                     mediaController?.clearMediaItems()
                     for (i in tmpShuffledAlbumSongInfo) {
@@ -514,8 +513,8 @@ fun ShuffleControls(mediaController: MediaController?, viewModel: PlayerViewMode
                         mediaController?.addMediaItem(MediaItem.fromUri(i.songUri))
                     }
                 } else { // Playing from albums screen
-                    viewModel.queuedSongs = viewModel.albumSongInfo.toMutableStateList()
-                    for (i in viewModel.albumSongInfo) {
+                    viewModel.queuedSongs = viewModel.shuffledAlbumSongInfo.toMutableStateList()
+                    for (i in viewModel.shuffledAlbumSongInfo) {
                         mediaController?.addMediaItem(MediaItem.fromUri(i.songUri))
                     }
                 }
@@ -687,7 +686,6 @@ fun AudioEffectMenu(
 ) {
     val speed = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.speed) })// by remember { mutableFloatStateOf(audioProcessor.speed) }
     val pitch = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.pitch) })// by remember { mutableFloatStateOf(audioProcessor.pitch) }
-
     val popupOffset =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
             IntOffset(175, -345)
@@ -742,15 +740,7 @@ fun AudioEffectMenu(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val sliderColumnWidth by remember {
-                    derivedStateOf {
-                        if (viewModel.showReverbValueSlider) {
-                            (viewModel.menuWidth.value / 4f).dp
-                        } else {
-                            (viewModel.menuWidth.value / 3f).dp
-                        }
-                    }
-                }
+                val sliderColumnWidth = viewModel.menuWidth.value / 2f
                 Spacer(Modifier.height(5.dp))
                 Row(
                     modifier = Modifier
@@ -763,8 +753,6 @@ fun AudioEffectMenu(
                     // Speed slider
                     SpeedPitchSlider(viewModel, sliderColumnWidth, sliderHeight, speed, "Speed")
                     SpeedPitchSlider(viewModel, sliderColumnWidth, sliderHeight, pitch, "Pitch")
-                    ReverbTypeSlider(viewModel, sliderColumnWidth, sliderHeight)
-                    ReverbValueSlider(viewModel, sliderColumnWidth, sliderHeight)
                 }
                 ApplyChangesButton(mediaController, audioProcessor, speed, pitch, viewModel)
             }
@@ -796,7 +784,6 @@ fun ApplyChangesButton(
                 if (tmpIsPlaying) { mediaController?.pause() }
                 audioProcessor.speed = speed.value.floatValue
                 audioProcessor.pitch = pitch.value.floatValue
-                audioProcessor.setReverbPreset((viewModel.reverbPresetType + viewModel.reverbPresetValue).toShort())
                 audioProcessor.usingSonicProcessor = audioProcessor.pitch != 1f || audioProcessor.speed != 1f
                 audioProcessor.configure(
                     AudioProcessor.AudioFormat(
@@ -824,12 +811,12 @@ fun ApplyChangesButton(
 
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpeedPitchSlider(viewModel: PlayerViewModel, sliderColumnWidth: Dp, sliderHeight: Dp, value: TmpAudioEffectValue, type: String) {
+fun SpeedPitchSlider(viewModel: PlayerViewModel, sliderColumnWidth: Float, sliderHeight: Dp, value: TmpAudioEffectValue, type: String) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .animateContentSize()
-            .width(sliderColumnWidth),
+            .width(sliderColumnWidth.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -878,175 +865,6 @@ fun SpeedPitchSlider(viewModel: PlayerViewModel, sliderColumnWidth: Dp, sliderHe
     }
 }
 
-@ExperimentalMaterial3Api
-@Composable
-fun ReverbTypeSlider(
-    viewModel: PlayerViewModel,
-    sliderColumnWidth: Dp,
-    sliderHeight: Dp
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .animateContentSize()
-            .width(sliderColumnWidth),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        LcdText(
-            "Reverb:",
-            viewModel = viewModel
-        )
-        Slider(
-            value = viewModel.reverbPresetType.toFloat(),
-            valueRange = 0f..3f,
-            steps = 4,
-            modifier = Modifier
-                .layout { measurable, constraints ->
-                    val placeable = measurable.measure(
-                        Constraints.fixed(
-                            width = sliderHeight.roundToPx(),
-                            height = 15.dp.roundToPx()
-                        )
-                    )
-                    layout(15.dp.roundToPx(), sliderHeight.roundToPx()) {
-                        placeable.place(
-                            x = -(sliderHeight.roundToPx() - 15.dp.roundToPx()) / 2,
-                            y = (sliderHeight.roundToPx() - 15.dp.roundToPx()) / 2,
-                        )
-                    }
-                }
-                .graphicsLayer(
-                    rotationZ = -90f
-                )
-                .size(sliderHeight, 15.dp),
-            onValueChange = {
-                viewModel.reverbPresetType = it.toInt()
-            },
-            onValueChangeFinished = {
-                // Controls the expanded menu
-                if (viewModel.reverbPresetType != 3 && viewModel.reverbPresetType != 0) {
-                    viewModel.menuWidth = 220.dp
-                    viewModel.showReverbValueSlider = true
-                    if (viewModel.reverbPresetType == PresetReverb.PRESET_SMALLROOM.toInt()) {
-                        viewModel.steps = 3
-                        viewModel.reverbValueRange = 0f..2f
-                    } else {
-                        viewModel.steps = 2
-                        viewModel.reverbValueRange = 0f..1f
-                    }
-                } else {
-                    viewModel.menuWidth = 180.dp
-                    viewModel.showReverbValueSlider = false
-                }
-            },
-            thumb = {
-                SliderThumb(viewModel)
-            },
-            track = {
-                SettingsSliderTrack(viewModel)
-            },
-        )
-        LargeLcdText(
-            (
-                    when (viewModel.reverbPresetType) {
-                        0 -> "None"
-                        1 -> "Room"
-                        2 -> "Hall"
-                        3 -> "Plate"
-                        else -> "None"
-                    }
-                    ),
-            viewModel = viewModel
-        )
-    }
-}
-
-@ExperimentalMaterial3Api
-@Composable
-fun ReverbValueSlider(
-    viewModel: PlayerViewModel,
-    sliderColumnWidth: Dp,
-    sliderHeight: Dp
-) {
-    if (viewModel.showReverbValueSlider) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(0.9f)
-                .animateContentSize()
-                .width(sliderColumnWidth),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LcdText(
-                "Value:",
-                viewModel = viewModel
-            )
-            val reverbValueSliderHeight = sliderHeight - 15.dp
-            Slider(
-                value = viewModel.reverbPresetValue.toFloat(),
-                valueRange = viewModel.reverbValueRange,
-                steps = viewModel.steps,
-                modifier = Modifier
-                    .layout { measurable, constraints ->
-                        val placeable = measurable.measure(
-                            Constraints.fixed(
-                                width = reverbValueSliderHeight.roundToPx(),
-                                height = 15.dp.roundToPx()
-                            )
-                        )
-                        layout(
-                            15.dp.roundToPx(),
-                            reverbValueSliderHeight.roundToPx()
-                        ) {
-                            placeable.place(
-                                x = -(reverbValueSliderHeight.roundToPx() - 15.dp.roundToPx()) / 2,
-                                y = (reverbValueSliderHeight.roundToPx() - 15.dp.roundToPx()) / 2,
-                            )
-                        }
-                    }
-                    .graphicsLayer(
-                        rotationZ = -90f
-                    )
-                    .size(sliderColumnWidth - 10.dp, 15.dp),
-                onValueChange = {
-                    viewModel.reverbPresetValue = it.toInt()
-                },
-                thumb = {
-                    SliderThumb(viewModel)
-                },
-                track = {
-                    SettingsSliderTrack(viewModel, 210f)
-                },
-            )
-            // Text representing the value
-            LcdText(
-                when (viewModel.steps) {
-                    3 -> {
-                        when (viewModel.reverbPresetValue) {
-                            0 -> "Small"
-                            1 -> "Medium"
-                            2 -> "Large"
-                            else -> "Small"
-                        }
-                    }
-
-                    2 -> {
-                        when (viewModel.reverbPresetValue) {
-                            0 -> "Medium"
-                            1 -> "Large"
-                            else -> "Medium"
-                        }
-                    }
-
-                    else -> "Error"
-                },
-                viewModel = viewModel
-            )
-        }
-    }
-}
-
 @Composable
 fun SettingsSliderTrack(viewModel: PlayerViewModel) {
     Column(
@@ -1061,31 +879,6 @@ fun SettingsSliderTrack(viewModel: PlayerViewModel) {
             onDraw = {
                 drawRoundRect(
                     size = Size(250f, 15f),
-                    style = Fill,
-                    color = viewModel.sliderTrackColor,
-                    cornerRadius = CornerRadius(10f, 10f),
-                    topLeft = Offset(0f, -6.5f)
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun SettingsSliderTrack(viewModel: PlayerViewModel, sliderHeight: Float) {
-    Column(
-        modifier = Modifier
-            .height(15.dp)
-            .width((sliderHeight).dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
-    ) {
-        Canvas(
-            modifier = Modifier
-                .width((sliderHeight).dp), // * 1.12f
-            onDraw = {
-                drawRoundRect(
-                    size = Size(sliderHeight, 15f), // "width" was 250f
                     style = Fill,
                     color = viewModel.sliderTrackColor,
                     cornerRadius = CornerRadius(10f, 10f),
