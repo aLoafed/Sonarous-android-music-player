@@ -1,9 +1,9 @@
-package com.example.audio_player.ui.theme
+package com.sonarous.player.ui.theme
 
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import com.example.audio_player.R
+import com.sonarous.player.R
 
 val dotoFamily = FontFamily(
     Font(R.font.doto_rounded_thin, FontWeight.Thin),

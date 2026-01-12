@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Canvas

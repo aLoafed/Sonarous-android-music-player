@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.EaseOut
@@ -40,8 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
-import com.example.audio_player.ui.theme.dotoFamily
-import com.example.audio_player.ui.theme.orbitronFamily
+import com.sonarous.player.ui.theme.dotoFamily
+import com.sonarous.player.ui.theme.orbitronFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

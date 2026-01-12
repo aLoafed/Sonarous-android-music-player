@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import androidx.compose.animation.core.EaseOutSine
 import androidx.compose.animation.core.TweenSpec
@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
-import com.example.audio_player.ui.theme.dotoFamily
+import com.sonarous.player.ui.theme.dotoFamily
 import kotlinx.coroutines.delay
 
 @Composable

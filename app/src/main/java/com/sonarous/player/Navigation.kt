@@ -1,6 +1,6 @@
 @file:kotlin.OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.audio_player
+package com.sonarous.player
 
 import android.content.Context
 import android.content.res.Configuration

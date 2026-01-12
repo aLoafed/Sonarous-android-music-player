@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.audio_player.ui.theme.lcdFont
+import com.sonarous.player.ui.theme.lcdFont
 
 @Composable
 fun InfoScreen(viewModel: PlayerViewModel, navController: NavController) {

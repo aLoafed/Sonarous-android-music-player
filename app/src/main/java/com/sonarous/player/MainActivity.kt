@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -35,8 +35,8 @@ import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.example.audio_player.ui.theme.Audio_playerTheme
-import com.example.audio_player.ui.theme.lcdFont
+import com.sonarous.player.ui.theme.Audio_playerTheme
+import com.sonarous.player.ui.theme.lcdFont
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.delay

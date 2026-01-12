@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.audio_player"
+    namespace = "com.sonarous.player"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.audio_player"
+        applicationId = "com.sonarous.player"
         minSdk = 30
         targetSdk = 36
         versionCode = 1

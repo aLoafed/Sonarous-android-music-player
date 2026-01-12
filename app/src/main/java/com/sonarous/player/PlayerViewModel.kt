@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.media3.session.MediaController
-import com.example.audio_player.ui.theme.LcdBlueWhite
-import com.example.audio_player.ui.theme.LcdGrey
+import com.sonarous.player.ui.theme.LcdBlueWhite
+import com.sonarous.player.ui.theme.LcdGrey
 
 class PlayerViewModel : ViewModel() {
     //========================= Media info =========================

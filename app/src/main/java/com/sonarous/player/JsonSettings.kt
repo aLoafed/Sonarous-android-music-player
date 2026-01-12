@@ -1,10 +1,10 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.audio_player.ui.theme.LcdBlueWhite
-import com.example.audio_player.ui.theme.LcdGrey
+import com.sonarous.player.ui.theme.LcdBlueWhite
+import com.sonarous.player.ui.theme.LcdGrey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File

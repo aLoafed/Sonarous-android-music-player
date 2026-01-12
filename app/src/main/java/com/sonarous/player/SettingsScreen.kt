@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import android.content.Context
 import androidx.compose.foundation.ScrollState
@@ -54,8 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.audio_player.ui.theme.LcdGrey
-import com.example.audio_player.ui.theme.lcdFont
+import com.sonarous.player.ui.theme.LcdGrey
+import com.sonarous.player.ui.theme.lcdFont
 import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.AlphaTile
 import com.github.skydoves.colorpicker.compose.BrightnessSlider

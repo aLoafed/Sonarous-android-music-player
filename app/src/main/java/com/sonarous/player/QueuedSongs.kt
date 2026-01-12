@@ -1,4 +1,4 @@
-package com.example.audio_player
+package com.sonarous.player
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
