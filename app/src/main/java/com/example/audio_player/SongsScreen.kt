@@ -257,7 +257,7 @@ fun ScrollBar(columnState: LazyListState, viewModel: PlayerViewModel, lazyColumn
             }
             drawRoundRect(
                 topLeft = Offset(0f,tabOffset.value.coerceIn(0f, scrollBarHeight - tabHeight)),
-                color = viewModel.backgroundColor.increaseBrightness(0.1f), // Should probably change the color // 0.05f
+                color = viewModel.backgroundColor.increaseBrightness(0.1f),
                 size = Size(30f, tabHeight - 10f),
                 cornerRadius = CornerRadius(30f, 30f),
             )

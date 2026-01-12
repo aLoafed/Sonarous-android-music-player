@@ -96,8 +96,8 @@ class PlayerService : MediaSessionService() {
             }
             if (visualiserIsOn) {
                 //============================ Collecting buffer data ============================//
-                val shortBuffer = result.asShortBuffer()// analysisBuffer.asShortBuffer()
-                val fftArray = DoubleArray(ARRAY_SIZE) // 512 as it's a power of 2 and isn't too laggy // Current though laggy is 1024
+                val shortBuffer = result.asShortBuffer()
+                val fftArray = DoubleArray(ARRAY_SIZE) // 512 as it's a power of 2 and isn't too laggy
                 var bufferVolume = 0.0
                 var buffer: Short
                 for (i in 0 until ARRAY_SIZE) {
@@ -117,7 +117,7 @@ class PlayerService : MediaSessionService() {
                     fftArray[i] = fftArray[i] * window
                 }
                 //================================= Graphical equaliser data =================================//
-                fft.realForward(fftArray) // Input array has the output array
+                fft.realForward(fftArray)
 
                 val absValueList = DoubleArray(fftArray.count() / 2)
                 var i = 0
@@ -233,7 +233,6 @@ class PlayerService : MediaSessionService() {
             release()
             mediaSession = null
         }
-//        stopSelf() -- May not be needed
         super.onDestroy()
     }
 }

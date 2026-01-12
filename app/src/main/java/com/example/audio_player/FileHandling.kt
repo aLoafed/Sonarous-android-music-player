@@ -57,7 +57,6 @@ fun getSongInfo(context: Context): Pair<List<SongInfo>, List<AlbumInfo>> {
                     null
                 ).asImageBitmap()
             } catch (_: FileNotFoundException) {
-                // albumCover = ImageBitmap(500,500).asAndroidBitmap()
                 albumCoverNotFoundBitmap
             }
             songInfo.add(

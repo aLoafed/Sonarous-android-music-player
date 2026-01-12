@@ -9,7 +9,6 @@ import androidx.collection.IntList
 import androidx.collection.intListOf
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -342,7 +341,7 @@ fun PortraitTabRow(
         ) {
             TabRow(
                 modifier = Modifier
-                    .fillMaxWidth() // Was 0.85f
+                    .fillMaxWidth()
                     .height(55.dp),
                 containerColor = viewModel.backgroundColor,
                 selectedTabIndex = selectedTab.value,

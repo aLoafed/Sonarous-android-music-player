@@ -32,7 +32,7 @@ class PlayerViewModel : ViewModel() {
     var isPlaying by mutableStateOf(false)
     var playingFromSongsScreen by mutableStateOf(true)
     var shuffleMode by mutableStateOf(false)
-    var repeatMode by mutableStateOf("normal") // Change to ENUM?
+    var repeatMode by mutableStateOf("normal")
     var queueingSongs by mutableStateOf(false)
     //============================ Colours ===========================
     var backgroundColor = LcdGrey

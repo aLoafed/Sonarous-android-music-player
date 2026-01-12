@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -143,7 +142,7 @@ class MainActivity : ComponentActivity() {
             setContent {
                 BasicLoadingScreen(viewModel)
             }
-            while (mediaController == null || viewModel.mediaInfoPair == null) { //
+            while (mediaController == null || viewModel.mediaInfoPair == null) {
                 delay(50)
             }
             while (!viewModel.loadingFinished) {
@@ -189,19 +188,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-//        val audioProcessor = mediaSessionService.getAudioProcessor()
         PlayerService.SpectrumAnalyzer.visualiserIsOn = true
     }
 
     override fun onStop() {
         super.onStop()
-//        val spectrumAnalyzer = mediaSessionService.getAudioProcessor()
         PlayerService.SpectrumAnalyzer.visualiserIsOn = false
     }
 
     override fun onDestroy() {
-        // For fixing mediaSessionService binding issues, tried: mediaSessionService.pauseAllPlayersAndStopSelf()
-//        mediaSessionService.stopSelf()
         MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }

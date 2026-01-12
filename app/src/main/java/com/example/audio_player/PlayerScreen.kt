@@ -249,7 +249,7 @@ fun PlayingMediaInfo(viewModel: PlayerViewModel) {
         modifier = Modifier.height(10.dp)
     )
     // Song name
-    PlayerLargeLcdText( // Was using Extra large
+    PlayerLargeLcdText(
         text = (
                 try {
                     viewModel.queuedSongs[viewModel.songIndex].name
@@ -264,7 +264,7 @@ fun PlayingMediaInfo(viewModel: PlayerViewModel) {
             .height(5.dp)
     )
     // Artist name
-    PlayerLcdText( // Was using Large
+    PlayerLcdText(
         text = (
                 try {
                     viewModel.queuedSongs[viewModel.songIndex].artist
@@ -684,8 +684,8 @@ fun AudioEffectMenu(
     audioProcessor: PlayerService.SpectrumAnalyzer,
     mediaController: MediaController?,
 ) {
-    val speed = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.speed) })// by remember { mutableFloatStateOf(audioProcessor.speed) }
-    val pitch = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.pitch) })// by remember { mutableFloatStateOf(audioProcessor.pitch) }
+    val speed = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.speed) })
+    val pitch = TmpAudioEffectValue(remember { mutableFloatStateOf(audioProcessor.pitch) })
     val popupOffset =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
             IntOffset(175, -345)

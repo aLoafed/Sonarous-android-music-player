@@ -19,13 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListPrefetchStrategy
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 
@@ -75,7 +75,8 @@ fun AlbumScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (albumInfo.count() % elementsPerRow == 0) {
-                        for (index in 0..elementsPerRow - 1) {
+                        Log.d("MusicPlayer", "First")
+                        for (index in 0 until elementsPerRow) {
                             Column(
                                 modifier = Modifier
                                     .padding(horizontal = 5.dp)
@@ -105,7 +106,9 @@ fun AlbumScreen(
                             }
                         }
                     } else {
+                        Log.d("MusicPlayer", "Second")
                         if (rowNumbers != rowIndex + 1) {
+                            Log.d("MusicPlayer", "Second:First")
                             for (index in 0..elementsPerRow - 1) {
                                 Column(
                                     modifier = Modifier
@@ -136,7 +139,8 @@ fun AlbumScreen(
                                 }
                             }
                         } else {
-                            for (index in 0..(albumInfo.count() % elementsPerRow)) {
+                            Log.d("MusicPlayer", "Second:Second")
+                            for (index in 0 until (albumInfo.count() % elementsPerRow)) {
                                 Column(
                                     modifier = Modifier
                                         .padding(horizontal = 5.dp)
@@ -154,13 +158,13 @@ fun AlbumScreen(
                                     Image(
                                         modifier = Modifier
                                             .aspectRatio(1f),
-                                        bitmap = albumInfo[rowIndex * 3 + index - 1].albumArt,
+                                        bitmap = albumInfo[rowIndex * elementsPerRow + index].albumArt,
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop
                                     )
                                     Spacer(Modifier.height(5.dp))
                                     AlbumScreenLcdText(
-                                        albumInfo[rowIndex * 3 + index - 1].albumName,
+                                        albumInfo[rowIndex * elementsPerRow + index].albumName,
                                         viewModel = viewModel,
                                     )
                                 }

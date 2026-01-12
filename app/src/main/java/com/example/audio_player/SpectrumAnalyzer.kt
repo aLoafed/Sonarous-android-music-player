@@ -403,7 +403,6 @@ fun volumeLevel(volume: Double): Float {
 
 @OptIn(UnstableApi::class)
 fun level63(data: Double): Float {
-//    var tempValue = spectrumAnalyzer.eqList[0]
     var tempValue = data
     if (tempValue > 110.0) {
         tempValue = 110.0

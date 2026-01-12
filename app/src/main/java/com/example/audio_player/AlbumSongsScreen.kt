@@ -122,7 +122,6 @@ fun AlbumSongsScreen(album: String, songInfo: List<SongInfo>, mediaController: M
                                         viewModel.queueingSongs = false
                                         viewModel.shuffleMode = false
                                         mediaController.clearMediaItems()
-//                                        viewModel.shuffledAlbumSongInfo = albumSongsList // Removed for centralization
                                         for (j in 0 until albumSongsList.count()) {
                                             mediaController.addMediaItem(
                                                 MediaItem.fromUri(
@@ -135,7 +134,6 @@ fun AlbumSongsScreen(album: String, songInfo: List<SongInfo>, mediaController: M
                                         mediaController.play()
                                         viewModel.queuedSongs = albumSongsList.toMutableStateList()
                                         viewModel.songIndex = i
-//                                        viewModel.updateAlbumArt(albumSongsList[i].albumArt) !!!! DEBUG !!!! Probably not needed
                                         viewModel.updateSongDuration((albumSongsList[i].time).toLong())
                                         viewModel.playingFromSongsScreen = false // Shows details from albums list
                                         navController.navigate("pager")
