@@ -77,12 +77,12 @@ import com.sonarous.player.LargeText
 import com.sonarous.player.MiscText
 import com.sonarous.player.PlayerLargeText
 import com.sonarous.player.PlayerText
-import com.sonarous.player.components.PlayerService
-import com.sonarous.player.components.PlayerViewModel
 import com.sonarous.player.R
 import com.sonarous.player.SongInfo
 import com.sonarous.player.Text
 import com.sonarous.player.Visualizer
+import com.sonarous.player.components.PlayerService
+import com.sonarous.player.components.PlayerViewModel
 import com.sonarous.player.ui.theme.dotoFamily
 import java.lang.Thread.sleep
 
@@ -192,7 +192,7 @@ fun ThermalBar() {
         Color(0xFFFDD3DB)
     )
     val textRanges = arrayOf(17, 6, 4, 3, 2, 2)
-    val offsets = arrayOf(0.dp, 8.dp, 5.dp, -5.dp, -20.dp, -35.dp)
+    val offsets = arrayOf(0.dp, 8.dp, 5.dp, (-5).dp, (-20).dp, (-35).dp)
 
     Row(
         modifier = Modifier
@@ -717,7 +717,7 @@ fun SeekBar(
         )
         Slider(
             value = currentSongPosition,
-            valueRange = 0f..viewModel.duration,
+            valueRange = 0f..viewModel.currentSongDuration,
             modifier = Modifier
                 .size(244.dp, 20.dp),
             onValueChange = {
@@ -737,7 +737,7 @@ fun SeekBar(
             },
         )
         Text(
-            getSongDurationString(viewModel),
+            getTextSongDuration(viewModel.currentSongDuration),
             viewModel = viewModel
         )
         LaunchedEffect(viewModel.currentSongPosition) {
@@ -748,11 +748,7 @@ fun SeekBar(
     }
 }
 
-fun getSongPositionString(
-    viewModel: PlayerViewModel,
-    isSeeking: Boolean,
-    currentSongPosition: Float
-): String {
+fun getSongPositionString(viewModel: PlayerViewModel, isSeeking: Boolean, currentSongPosition: Float): String {
     var seconds: String
     var minutes: String
     if (!isSeeking) {
@@ -768,9 +764,9 @@ fun getSongPositionString(
     return "$minutes$seconds"
 }
 
-fun getSongDurationString(viewModel: PlayerViewModel): String {
-    val minutes = "${(viewModel.duration / 60).toInt()}:"
-    var seconds = "${(viewModel.duration % 60).toInt()}"
+fun getTextSongDuration(duration: Float): String {
+    val minutes = "${(duration / 60).toInt()}:"
+    var seconds = "${(duration % 60).toInt()}"
     while (seconds.length < 2) {
         seconds = "0$seconds"
     }
@@ -963,7 +959,7 @@ fun ApplyChangesButton(
                 mediaController?.play()
             }
             viewModel.updateSongDuration(
-                audioProcessor.getDurationAfterProcessorApplied(viewModel.duration.toLong())
+                audioProcessor.getDurationAfterProcessorApplied(viewModel.currentSongDuration.toLong())
             )
             viewModel.audioEffectMenuExpanded = false
         },
@@ -992,7 +988,7 @@ fun SpeedPitchSlider(viewModel: PlayerViewModel, sliderColumnWidth: Float, slide
         )
         Slider(
             modifier = Modifier
-                .layout { measurable, constraints ->
+                .layout { measurable, _ ->
                     val placeable = measurable.measure(
                         Constraints.fixed(
                             width = sliderHeight.roundToPx(),

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaController
 import com.sonarous.player.BackButtonRow
+import com.sonarous.player.ScrollBar
 import com.sonarous.player.SongInfo
 import com.sonarous.player.Text
 import com.sonarous.player.components.PlayerViewModel
@@ -98,7 +99,7 @@ fun ArtistSongs(
             pagerState.requestScrollToPage(1)
             viewModel.showSearchBar = false
             viewModel.queuedSongs = artistSongs.toMutableStateList()
-            viewModel.updateSongDuration((artistSongs[i].time).toLong())
+            viewModel.updateSongDuration((artistSongs[i].duration).toLong())
             viewModel.songIndex = i
         }
     }

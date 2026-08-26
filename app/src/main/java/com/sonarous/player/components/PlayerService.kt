@@ -2,6 +2,7 @@ package com.sonarous.player.components
 
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -58,7 +59,6 @@ class PlayerService : MediaSessionService() {
         var volume = 0.0
         var usingSonicProcessor = false
         private val emissionScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-//        private var actualAudioLatencyMs = 0L
 
         override fun configure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
             if (usingSonicProcessor) {
@@ -93,35 +93,17 @@ class PlayerService : MediaSessionService() {
         }
 
         override fun getOutput(): ByteBuffer {
-            val result = if (usingSonicProcessor) {
+            val soundBuffer = if (usingSonicProcessor) {
                 sonicAudioProcessor.output
             } else {
                 outputBuffer
             }
             if (visualiserIsOn) {
                 //============================ Collecting buffer data ============================//
-                val shortBuffer = result.asShortBuffer()
                 val fftArray = DoubleArray(ARRAY_SIZE) // 512 as it's a power of 2 and isn't too laggy
-                var bufferVolume = 0.0
-                var buffer: Short
-                for (i in 0 until ARRAY_SIZE) {
-                    try {
-                        buffer = shortBuffer.get()
-                        bufferVolume += (buffer * buffer).toDouble() // To cancel out the - & + values
-                        fftArray[i] = buffer / 32768.0 // Normalisation
-                    } catch (_: BufferUnderflowException) {
-                        fftArray[i] = 0.0
-                        bufferVolume += 0.0
-                    }
-                    if (fftArray[i].isNaN() or fftArray[i].isInfinite()) { // Prevent float NaN's
-                        fftArray[i] = 0.0
-                        bufferVolume += 0.0
-                    }
-                    val window = 0.5 * (1 - cos(2.0 * Math.PI * i / (ARRAY_SIZE - 1))) // Hann window to reduce sound leakage
-                    fftArray[i] = fftArray[i] * window
-                }
+                var bufferVolume = getFftData(soundBuffer, fftArray)
+
                 //================================= Visualizer data =================================//
-                fft.realForward(fftArray)
 
                 val absValueList = DoubleArray(fftArray.count() / 2)
                 var i = 0
@@ -137,7 +119,6 @@ class PlayerService : MediaSessionService() {
 
                 val capturedVisualizerList = visualizerList.copyOf()
                 val capturedVolume = volume
-//                val delayMs = actualAudioLatencyMs.coerceAtLeast(0L)
 
                 emissionScope.launch {
                     delay(500)
@@ -151,7 +132,36 @@ class PlayerService : MediaSessionService() {
             if (endOfStreamQueued) {
                 isEnded = true
             }
-            return result
+            return soundBuffer
+        }
+
+        /**
+         * Calculates the FFT of the input buffer and fills the fftArray with the result.
+         * The volume of the buffer is returned
+         */
+        private fun getFftData(inputBuffer: ByteBuffer, fftArray: DoubleArray): Double {
+            val shortBuffer = inputBuffer.asShortBuffer()
+            var buffer: Short
+            var bufferVolume = 0.0
+            for (i in 0 until ARRAY_SIZE) {
+                try {
+                    buffer = shortBuffer.get()
+                    bufferVolume += (buffer * buffer).toDouble() // To cancel out the - & + values
+                    fftArray[i] = buffer / 32768.0 // Normalisation
+                } catch (_: BufferUnderflowException) {
+                    fftArray[i] = 0.0
+                    bufferVolume += 0.0
+                }
+                if (fftArray[i].isNaN() or fftArray[i].isInfinite()) { // Prevent float NaN's
+                    fftArray[i] = 0.0
+                    bufferVolume += 0.0
+                }
+                val window = 0.5 * (1 - cos(2.0 * Math.PI * i / (ARRAY_SIZE - 1))) // Hann window to reduce sound leakage
+                fftArray[i] = fftArray[i] * window
+            }
+            //================================= Visualizer data =================================//
+            fft.realForward(fftArray)
+            return bufferVolume
         }
 
         override fun isEnded(): Boolean = isEnded
@@ -237,6 +247,7 @@ class PlayerService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        mediaSession ?: Log.e("SonarousLogs", "Media session: null [service] >> Unable to release")
         mediaSession?.run {
             player.release()
             release()

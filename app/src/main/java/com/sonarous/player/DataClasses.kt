@@ -30,7 +30,7 @@ data class SongInfo(
     val name: String,
     val fileName: String,
     val uri: Uri,
-    val time: Float,
+    val duration: Float,
     val artist: String,
     val album: String,
     val albumArt: ImageBitmap

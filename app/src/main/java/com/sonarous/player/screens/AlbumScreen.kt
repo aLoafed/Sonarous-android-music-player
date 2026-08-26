@@ -20,11 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,6 +35,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.sonarous.player.AlbumInfo
 import com.sonarous.player.AlbumScreenText
+import com.sonarous.player.ScrollBar
 import com.sonarous.player.components.PlayerViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,22 +130,6 @@ fun AlbumScreen(
         }
     }
 }
-
-//fun searchAlbums(albums: List<AlbumInfo>, searchText: String): List<AlbumInfo> {
-//    val albumsI = albums.binarySearch { it.albumName.lowercase().compareTo(searchText.lowercase()) }
-//    if (albumsI < 0) return emptyList()
-//    // Get the lower index of the searched songs
-//    var lowerI = 0
-//    for (i in albumsI downTo 0) {
-//        if (albums[i].albumName.equals(searchText, ignoreCase = true)) lowerI = i else break
-//    }
-//    // Get the upper index of the searched songs
-//    var upperI = 0
-//    for (i in albumsI until albums.size) {
-//        if (albums[i].albumName.equals(searchText, ignoreCase = true)) upperI = i else break
-//    }
-//    return albums.subList(lowerI, upperI + 1) // Exclusive upper bound
-//}
 
 @Composable
 fun AlbumRow(

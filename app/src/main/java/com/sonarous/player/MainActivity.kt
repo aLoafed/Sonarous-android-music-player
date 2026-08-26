@@ -42,7 +42,6 @@ import com.sonarous.player.components.PlayerViewModel
 import com.sonarous.player.screens.BasicLoadingScreen
 import com.sonarous.player.screens.editSongAlbumArt
 import com.sonarous.player.screens.editSongTag
-import com.sonarous.player.ui.theme.Audio_playerTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -205,42 +204,40 @@ class MainActivity : ComponentActivity() {
             mediaController.addListener(listener)
 
             setContent {
-                Audio_playerTheme {
-                    NavHost(
-                        mediaController,
-                        songInfo,
-                        audioProcessor,
-                        viewModel,
-                        albumInfo,
-                        applicationContext
-                    )
+                NavHost(
+                    mediaController,
+                    songInfo,
+                    audioProcessor,
+                    viewModel,
+                    albumInfo,
+                    applicationContext
+                )
 
-                    // --------------------- Monitoring --------------------- //
-                    if (viewModel.isPlaying) {
-                        LaunchedEffect(Unit) {
-                            while (true) {
-                                viewModel.updateCurrentSongPosition(mediaController.currentPosition)
+                // --------------------- Monitoring --------------------- //
+                if (viewModel.isPlaying) {
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            viewModel.updateCurrentSongPosition(mediaController.currentPosition)
+                            delay(1.seconds / 30)
+                        }
+                    }
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            mediaController.let {
+                                if (it.duration != C.TIME_UNSET) {
+                                    viewModel.updateSongDuration(mediaController.duration)
+                                }
                                 delay(1.seconds / 30)
                             }
                         }
-                        LaunchedEffect(Unit) {
-                            while (true) {
-                                mediaController.let {
-                                    if (it.duration != C.TIME_UNSET) {
-                                        viewModel.updateSongDuration(mediaController.duration)
-                                    }
-                                    delay(1.seconds / 30)
-                                }
-                            }
-                        }
                     }
-                    LaunchedEffect(viewModel.thermalStatus) {
-                        if (viewModel.thermalStatus >= PowerManager.THERMAL_STATUS_EMERGENCY) {
-                            audioProcessor.visualiserIsOn = false
-                        } else if (viewModel.thermalStatus <= PowerManager.THERMAL_STATUS_SEVERE) {
-                            // TODO - Should check to see if user wants visualizer hidden
-                            audioProcessor.visualiserIsOn = true
-                        }
+                }
+                LaunchedEffect(viewModel.thermalStatus) {
+                    if (viewModel.thermalStatus >= PowerManager.THERMAL_STATUS_EMERGENCY) {
+                        audioProcessor.visualiserIsOn = false
+                    } else if (viewModel.thermalStatus <= PowerManager.THERMAL_STATUS_SEVERE) {
+                        // TODO - Should check to see if user wants visualizer hidden
+                        audioProcessor.visualiserIsOn = true
                     }
                 }
             }

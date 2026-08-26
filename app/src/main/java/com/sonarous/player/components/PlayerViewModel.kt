@@ -26,7 +26,7 @@ import org.jaudiotagger.tag.FieldKey
 
 class PlayerViewModel : ViewModel() {
     //========================= Media info =========================
-    var duration by mutableFloatStateOf(0f) // Length of song
+    var currentSongDuration by mutableFloatStateOf(0f) // Length of song
         private set
     var currentSongPosition by mutableFloatStateOf((0f)) // Current position in song
     var songIndex by mutableIntStateOf(0)
@@ -160,7 +160,7 @@ class PlayerViewModel : ViewModel() {
         currentSongPosition = time.toFloat() / 1000f
     }
     fun updateSongDuration(time: Long) {
-        duration = time / 1000f
+        currentSongDuration = time / 1000f
     }
     fun updateSongPosition(mediaController: MediaController?, time: Long) {
         mediaController?.seekTo(time * 1000)
