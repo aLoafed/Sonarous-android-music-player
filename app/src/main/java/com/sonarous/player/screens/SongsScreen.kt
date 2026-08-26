@@ -2,21 +2,17 @@ package com.sonarous.player.screens
 
 import android.content.Context
 import androidx.annotation.OptIn
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +24,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,22 +32,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -61,13 +49,12 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import com.sonarous.player.LargeText
 import com.sonarous.player.R
+import com.sonarous.player.ScrollBar
 import com.sonarous.player.SongInfo
 import com.sonarous.player.Text
 import com.sonarous.player.components.PlayerViewModel
-import com.sonarous.player.increaseBrightness
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.collections.listOf
 
 @ExperimentalFoundationApi
 @OptIn(UnstableApi::class)
@@ -102,7 +89,7 @@ fun SongsScreen(
 
             pagerState.requestScrollToPage(1)
             viewModel.queuedSongs = songInfo.toMutableStateList()
-            viewModel.updateSongDuration((songInfo[i].time).toLong())
+            viewModel.updateSongDuration((songInfo[i].duration).toLong())
             viewModel.songIndex = i
             viewModel.playingFromSongsScreen = true
         }
@@ -138,7 +125,7 @@ fun SongsScreen(
             viewModel.showSearchBar = false
 //            viewModel.queuedSongs = searchedSongs.toMutableStateList()
             viewModel.queuedSongs = mutableStateListOf(searchedSongs[i])
-            viewModel.updateSongDuration((searchedSongs[i].time).toLong())
+            viewModel.updateSongDuration((searchedSongs[i].duration).toLong())
             viewModel.songIndex = 0
             viewModel.playingFromSongsScreen = true
         }
@@ -223,16 +210,23 @@ fun SongRow(
                 }
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        AlbumCover(songInfo)
-        Spacer(
-            modifier = Modifier
-                .width(10.dp)
-        )
-        SongTextColumn(songInfo, viewModel)
-        MoreOptionsButton(songInfo, viewModel)
+        Row(Modifier.fillMaxWidth(0.8f)) {
+            AlbumCover(songInfo)
+            Spacer(modifier = Modifier.width(10.dp))
+            SongTextColumn(songInfo, viewModel)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+            SongDurationText(songInfo, viewModel)
+            MoreOptionsButton(songInfo, viewModel)
+        }
     }
+}
+
+@Composable
+fun SongDurationText(song: SongInfo, viewModel: PlayerViewModel) {
+    Text(getTextSongDuration(song.duration), viewModel = viewModel)
 }
 
 @Composable
@@ -250,14 +244,14 @@ fun AlbumCover(songInfo: SongInfo, size: Dp = 65.dp) {
 fun SongTextColumn(songInfo: SongInfo, viewModel: PlayerViewModel) {
     Column(
         modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(0.9f),
+            .fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start
     ) {
-        LargeText( //Song name
+        LargeText( // Song name
             text = songInfo.name,
-            viewModel = viewModel
+            viewModel = viewModel,
+            maxLength = 20
         )
         Spacer(
             modifier = Modifier
@@ -279,7 +273,7 @@ fun SongTextColumn(songInfo: SongInfo, viewModel: PlayerViewModel) {
 fun MoreOptionsButton(song: SongInfo, viewModel: PlayerViewModel) {
     IconButton(
         modifier = Modifier
-            .size(50.dp),
+            .size(30.dp),
         onClick = {
             viewModel.showMoreSongOptions = !viewModel.showMoreSongOptions
             viewModel.moreOptionsSelectedSong = song
@@ -296,58 +290,3 @@ fun MoreOptionsButton(song: SongInfo, viewModel: PlayerViewModel) {
     }
 }
 
-@Composable
-fun ScrollBar(columnState: LazyListState, viewModel: PlayerViewModel, lazyColumnSize: Float, itemsPerViewport: Float = 9f) {
-    var scrollBarHeight by remember { mutableFloatStateOf(0f) }
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .windowInsetsPadding(WindowInsets.displayCutout)
-            .onGloballyPositioned { coordinates ->
-                scrollBarHeight = coordinates.size.height.toFloat()
-            },
-    ) {
-        val scope = rememberCoroutineScope()
-        val tabOffset = remember {
-            derivedStateOf {
-                if (lazyColumnSize <= itemsPerViewport) {
-                    0f
-                } else {
-                    // (Percentage of lazy list covered + percentage of offset) * scrollBarHeight
-                    val overallPercentageScroll = columnState.firstVisibleItemIndex.toFloat() / columnState.layoutInfo.totalItemsCount.toFloat()
-                    val offsetPercentageScroll = columnState.firstVisibleItemScrollOffset.dp.value / (columnState.layoutInfo.viewportSize.height.toFloat() * (columnState.layoutInfo.totalItemsCount.toFloat() / itemsPerViewport))
-                    overallPercentageScroll * scrollBarHeight + offsetPercentageScroll * scrollBarHeight
-                }
-            }
-        }
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { pointerChange, value ->
-                        val yDelta = pointerChange.position.y
-                        scope.launch {
-                            columnState.scrollBy(
-                                // Percentage change in position * total lazy column size in px
-                                (yDelta - tabOffset.value) / scrollBarHeight * (columnState.layoutInfo.viewportSize.height.toFloat() * (columnState.layoutInfo.totalItemsCount.toFloat() / itemsPerViewport))
-                            )
-                        }
-                    }
-                }
-        ) {
-            val tabHeight = if (lazyColumnSize <= itemsPerViewport) {
-                scrollBarHeight
-            } else {
-                itemsPerViewport / lazyColumnSize * scrollBarHeight
-            }
-            drawRoundRect(
-                topLeft = Offset(0f,tabOffset.value.coerceIn(0f, scrollBarHeight - tabHeight)),
-                color = viewModel.backgroundColor.increaseBrightness(0.1f),
-                size = Size(30f, tabHeight - 10f),
-                cornerRadius = CornerRadius(30f, 30f),
-            )
-        }
-    }
-}

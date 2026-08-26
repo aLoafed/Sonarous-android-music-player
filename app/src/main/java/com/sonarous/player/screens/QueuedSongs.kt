@@ -31,8 +31,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaController
-import com.sonarous.player.components.PlayerViewModel
 import com.sonarous.player.R
+import com.sonarous.player.ScrollBar
+import com.sonarous.player.components.PlayerViewModel
 
 @ExperimentalFoundationApi
 @Composable
@@ -56,50 +57,52 @@ fun SongQueue(viewModel: PlayerViewModel, mediaController: MediaController?) {
             state = viewModel.queuedSongsLazyColumnState,
         ) {
             items(lazyListSize) { i ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(75.dp)
-                        .border(
-                            width = (
-                                    if (i == viewModel.songIndex) {
-                                        0.dp
-                                    } else {
-                                        (-1).dp
-                                    }
-                                    ),
-                            color = viewModel.iconColor,
-                            shape = RoundedCornerShape(corner = CornerSize(10.dp))
-                        )
-                        .padding(5.dp)
-                        .clickable(
-                            onClick = {
-                                mediaController?.clearMediaItems()
-                                for (j in 0 until viewModel.queuedSongs.count()) {
-                                    mediaController?.addMediaItem(MediaItem.fromUri(viewModel.queuedSongs[j].uri))
-                                }
-                                mediaController?.prepare()
-                                mediaController?.seekTo(i, 0L)
-                                mediaController?.play()
-                                viewModel.updateSongDuration((viewModel.queuedSongs[i].time).toLong())
-                                viewModel.songIndex = i
-                                viewModel.playingFromSongsScreen = true
-                            }
-                        ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    AlbumCover(viewModel.queuedSongs[i], 60.dp)
-                    Spacer(
-                        modifier = Modifier
-                            .width(10.dp)
-                    )
-                    SongTextColumn(viewModel.queuedSongs[i], viewModel)
-                    RemoveFromQueue(viewModel, mediaController, i)
-                }
+                QueuedSongRow(viewModel, i, mediaController)
             }
         }
         ScrollBar(viewModel.queuedSongsLazyColumnState, viewModel, lazyListSize.toFloat(), 10.toFloat())
+    }
+}
+
+@Composable
+fun QueuedSongRow(viewModel: PlayerViewModel, i: Int, mediaController: MediaController?) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(75.dp)
+            .border(
+                width = (if (i == viewModel.songIndex) 0.dp else (-1).dp),
+                color = viewModel.iconColor,
+                shape = RoundedCornerShape(corner = CornerSize(10.dp))
+            )
+            .padding(5.dp)
+            .clickable(
+                onClick = {
+                    mediaController?.clearMediaItems()
+                    for (j in 0 until viewModel.queuedSongs.count()) {
+                        mediaController?.addMediaItem(MediaItem.fromUri(viewModel.queuedSongs[j].uri))
+                    }
+                    mediaController?.prepare()
+                    mediaController?.seekTo(i, 0L)
+                    mediaController?.play()
+                    viewModel.updateSongDuration((viewModel.queuedSongs[i].duration).toLong())
+                    viewModel.songIndex = i
+                    viewModel.playingFromSongsScreen = true
+                }
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(Modifier.fillMaxWidth(0.77f)) {
+            AlbumCover(viewModel.queuedSongs[i], 60.dp)
+            Spacer(modifier = Modifier.width(10.dp))
+            SongTextColumn(viewModel.queuedSongs[i], viewModel)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SongDurationText(viewModel.queuedSongs[i], viewModel)
+            Spacer(modifier = Modifier.width(5.dp))
+            RemoveFromQueue(viewModel, mediaController, i)
+        }
     }
 }
 
@@ -110,7 +113,7 @@ fun RemoveFromQueue(viewModel: PlayerViewModel, mediaController: MediaController
             mediaController?.removeMediaItem(index)
             viewModel.queuedSongs.removeAt(index)
         },
-        modifier = Modifier.size(36.dp),
+        modifier = Modifier.size(24.dp),
         colors = IconButtonDefaults.iconButtonColors(contentColor = viewModel.iconColor)
     ) {
         Icon(
