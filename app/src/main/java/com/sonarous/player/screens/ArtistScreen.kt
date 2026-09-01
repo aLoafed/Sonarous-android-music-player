@@ -152,10 +152,9 @@ fun ArtistSongs(
     }
 }
 
-
 @Composable
 fun Artists(viewModel: PlayerViewModel, songInfo: List<SongInfo>, selectedArtist: MutableState<String?>) {
-    val artists = remember(songInfo) { getArtists(songInfo) }
+    val artists = remember(songInfo) { getArtists(songInfo).sorted() }
     val lazyColumnState = rememberLazyListState(
         initialFirstVisibleItemIndex = 0,
         initialFirstVisibleItemScrollOffset = 0,

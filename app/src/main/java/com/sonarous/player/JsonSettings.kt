@@ -5,14 +5,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.sonarous.player.screens.changeBrightness
 import com.sonarous.player.ui.theme.LcdBlueWhite
-import com.sonarous.player.ui.theme.LcdGrey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 
 @Serializable
 data class SettingsData(
-    val backgroundColor: Int = LcdGrey.toArgb(),
+    val backgroundColor: Int = Color.Black.toArgb(),
     val textColor: Int = Color.White.toArgb(),
     val iconColor: Int = Color.White.toArgb(),
     val visualizerLevelColor: Int = Color.White.toArgb(),
