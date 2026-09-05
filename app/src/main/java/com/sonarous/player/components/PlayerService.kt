@@ -3,6 +3,7 @@ package com.sonarous.player.components
 import android.content.Context
 import android.os.Handler
 import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -63,7 +64,7 @@ class PlayerService : MediaSessionService() {
         override fun configure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
             if (usingSonicProcessor) {
                 sonicAudioProcessor.configure(inputAudioFormat)
-                // Factor must not be 1f or else null pointer exception
+                // Factors must not be 1 or 0 -> crash
                 if (speed != 1f && speed != 0f) {
                     sonicAudioProcessor.setSpeed(speed)
                 }
@@ -99,33 +100,7 @@ class PlayerService : MediaSessionService() {
                 outputBuffer
             }
             if (visualiserIsOn) {
-                //============================ Collecting buffer data ============================//
-                val fftArray = DoubleArray(ARRAY_SIZE) // 512 as it's a power of 2 and isn't too laggy
-                var bufferVolume = getFftData(soundBuffer, fftArray)
-
-                //================================= Visualizer data =================================//
-
-                val absValueList = DoubleArray(fftArray.count() / 2)
-                var i = 0
-                while (i < fftArray.count() / 2) {
-                    val real = fftArray[i * 2]
-                    val imaginary = fftArray[i * 2 + 1]
-                    absValueList[i] = sqrt(real * real + imaginary * imaginary)
-                    i++
-                }
-                bufferVolume = sqrt(bufferVolume / ARRAY_SIZE)
-                visualizerList = frequencyCalculator(absValueList)
-                volume = bufferVolume
-
-                val capturedVisualizerList = visualizerList.copyOf()
-                val capturedVolume = volume
-
-                emissionScope.launch {
-                    delay(500)
-                    _visualizerStateFlow.emit(
-                        VisualiserData(capturedVisualizerList, capturedVolume)
-                    )
-                }
+                sendVisualizerData(soundBuffer)
             }
             //================================= End of equaliser processing =================================//
             outputBuffer = AudioProcessor.EMPTY_BUFFER
@@ -133,6 +108,36 @@ class PlayerService : MediaSessionService() {
                 isEnded = true
             }
             return soundBuffer
+        }
+
+        private fun sendVisualizerData(soundBuffer: ByteBuffer) {
+            //============================ Collecting buffer data ============================//
+            val fftArray = DoubleArray(ARRAY_SIZE) // 512 as it's a power of 2 and isn't too laggy
+            var bufferVolume = getFftData(soundBuffer, fftArray)
+
+            //================================= Visualizer data =================================//
+
+            val absValueList = DoubleArray(fftArray.count() / 2)
+            var i = 0
+            while (i < fftArray.count() / 2) {
+                val real = fftArray[i * 2]
+                val imaginary = fftArray[i * 2 + 1]
+                absValueList[i] = sqrt(real * real + imaginary * imaginary)
+                i++
+            }
+            bufferVolume = sqrt(bufferVolume / ARRAY_SIZE)
+            visualizerList = frequencyCalculator(absValueList)
+            volume = bufferVolume
+
+            val capturedVisualizerList = visualizerList.copyOf()
+            val capturedVolume = volume
+
+            emissionScope.launch {
+                delay(500)
+                _visualizerStateFlow.emit(
+                    VisualiserData(capturedVisualizerList, capturedVolume)
+                )
+            }
         }
 
         /**
@@ -241,6 +246,7 @@ class PlayerService : MediaSessionService() {
         }
         player = ExoPlayer.Builder(this)
             .setRenderersFactory(renderersFactory)
+            .setWakeMode(C.WAKE_MODE_LOCAL)
             .build()
         mediaSession = MediaSession.Builder(this, player)
             .build()
