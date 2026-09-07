@@ -93,37 +93,6 @@ fun AlbumSongsScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
     ) {
-        // Top bar
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(60.dp),
-//            horizontalArrangement = Arrangement.Start,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            IconButton(
-//                content = {
-//                    Icon(
-//                        painterResource(R.drawable.arrow_back),
-//                        contentDescription = "Back arrow"
-//                    )
-//                },
-//                onClick = {
-//                    navController.popBackStack()
-//                },
-//                colors = IconButtonColors(
-//                    contentColor = viewModel.iconColor,
-//                    containerColor = Color.Transparent,
-//                    disabledContentColor = viewModel.iconColor,
-//                    disabledContainerColor = Color.Transparent
-//                )
-//            )
-//            Spacer(
-//                modifier = Modifier
-//                    .width(5.dp)
-//            )
-//            LargeText(album, viewModel = viewModel)
-//        }
         BackButtonRow(viewModel, 60.dp, album) {
             navController.popBackStack()
         }

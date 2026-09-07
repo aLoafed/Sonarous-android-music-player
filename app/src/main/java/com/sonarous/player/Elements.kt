@@ -41,6 +41,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -154,11 +155,7 @@ fun PlayerText(text: String, modifier: Modifier = Modifier, viewModel: PlayerVie
 }
 
 @Composable
-fun AlbumScreenText(
-    text: String,
-    modifier: Modifier = Modifier,
-    viewModel: PlayerViewModel
-) {
+fun AlbumScreenText(text: String, viewModel: PlayerViewModel, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
         text = text,
@@ -166,7 +163,8 @@ fun AlbumScreenText(
         fontSize = 15.sp,
         fontFamily = shareTechFont,
         fontWeight = FontWeight.Normal,
-        lineHeight = 15.sp
+        lineHeight = 15.sp,
+        overflow = TextOverflow.Clip,
     )
 }
 

@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,8 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -105,7 +108,7 @@ fun AlbumScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(160.dp)
+                            .height(150.dp)
                             .padding(5.dp),
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically
@@ -125,7 +128,7 @@ fun AlbumScreen(
                 viewModel.albumScreenLazyColumnState,
                 viewModel,
                 rowNumbers.toFloat(),
-                4.toFloat()
+                5.toFloat()
             )
         }
     }
@@ -140,102 +143,92 @@ fun AlbumRow(
     rowIndex: Int,
     rowNumbers: Int,
 ) {
-    val albumWidth = 110.dp
+    val albumWidth = 100.dp
 
-    if (albumInfo.count() % elementsPerRow == 0) {
-        for (index in 0 until elementsPerRow) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 5.dp)
-                    .fillMaxHeight()
-                    .width(albumWidth)
-                    .clickable(
-                        onClick = {
-                            viewModel.selectedAlbum =
-                                albumInfo[rowIndex * elementsPerRow + index].albumName
-                            navController.navigate("album_songs_screen")
-                        }
-                    ),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
-            ) {
-                Image(
-                    modifier = Modifier
-                        .aspectRatio(1f),
-                    bitmap = albumInfo[rowIndex * elementsPerRow + index].albumArt,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(Modifier.height(5.dp))
-                AlbumScreenText(
-                    albumInfo[rowIndex * elementsPerRow + index].albumName,
-                    viewModel = viewModel,
-                )
-            }
-        }
-    } else {
-        if (rowNumbers != rowIndex + 1) {
+    when {
+        albumInfo.count() % elementsPerRow == 0 -> {
             for (index in 0 until elementsPerRow) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 5.dp)
-                        .fillMaxHeight()
-                        .width(albumWidth)
-                        .clickable(
-                            onClick = {
-                                viewModel.selectedAlbum =
-                                    albumInfo[rowIndex * elementsPerRow + index].albumName
-                                navController.navigate("album_songs_screen")
-                            }
-                        ),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
+                Album(
+                    viewModel,
+                    albumInfo[rowIndex * elementsPerRow + index].albumArt,
+                    albumInfo[rowIndex * elementsPerRow + index].albumName,
+                    albumWidth
                 ) {
-                    Image(
-                        modifier = Modifier
-                            .aspectRatio(1f),
-                        bitmap = albumInfo[rowIndex * elementsPerRow + index].albumArt,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(Modifier.height(5.dp))
-                    AlbumScreenText(
-                        albumInfo[rowIndex * elementsPerRow + index].albumName,
-                        viewModel = viewModel,
-                    )
-                }
-            }
-        } else {
-            for (index in 0 until (albumInfo.count() % elementsPerRow)) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 5.dp)
-                        .fillMaxHeight()
-                        .width(albumWidth)
-                        .clickable(
-                            onClick = {
-                                viewModel.selectedAlbum =
-                                    albumInfo[rowIndex * elementsPerRow + index].albumName
-                                navController.navigate("album_songs_screen")
-                            }
-                        ),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .aspectRatio(1f),
-                        bitmap = albumInfo[rowIndex * elementsPerRow + index].albumArt,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(Modifier.height(5.dp))
-                    AlbumScreenText(
-                        albumInfo[rowIndex * elementsPerRow + index].albumName,
-                        viewModel = viewModel,
-                    )
+                    viewModel.selectedAlbum = albumInfo[rowIndex * elementsPerRow + index].albumName
+                    navController.navigate("album_songs_screen")
                 }
             }
         }
+
+        rowNumbers != rowIndex + 1 -> {
+            for (index in 0 until elementsPerRow) {
+                Album(
+                    viewModel,
+                    albumInfo[rowIndex * elementsPerRow + index].albumArt,
+                    albumInfo[rowIndex * elementsPerRow + index].albumName,
+                    albumWidth
+                ) {
+                    viewModel.selectedAlbum = albumInfo[rowIndex * elementsPerRow + index].albumName
+                    navController.navigate("album_songs_screen")
+                }
+            }
+        }
+
+        else -> {
+            for (index in 0 until (albumInfo.count() % elementsPerRow)) {
+                Album(
+                    viewModel,
+                    albumInfo[rowIndex * elementsPerRow + index].albumArt,
+                    albumInfo[rowIndex * elementsPerRow + index].albumName,
+                    albumWidth
+                ) {
+                    viewModel.selectedAlbum = albumInfo[rowIndex * elementsPerRow + index].albumName
+                    navController.navigate("album_songs_screen")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Album(viewModel: PlayerViewModel, bitmap: ImageBitmap, albumText: String, albumWidth: Dp, onClick: () -> Unit) {
+    val yInset = 0.85f
+    val xInset = 0.8f
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 5.dp)
+            .drawBehind {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    relativeLineTo(size.width, 0f)
+                    relativeLineTo(0f, size.height * yInset)
+                    moveTo(0f,0f)
+                    relativeLineTo(0f, size.height)
+                    relativeLineTo(size.width * xInset, 0f)
+                    lineTo(size.width, size.height * yInset)
+                }
+                drawPath(
+                    path,
+                    viewModel.iconColor,
+                    style = Stroke()
+                )
+            }
+            .padding(5.dp)
+            .fillMaxHeight()
+            .width(albumWidth)
+            .clickable(onClick = { onClick() }),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Image(
+            modifier = Modifier.aspectRatio(1f),
+            bitmap = bitmap,
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
+        AlbumScreenText(
+            albumText,
+            viewModel,
+            Modifier.fillMaxWidth(0.9f).fillMaxHeight()
+        )
     }
 }
